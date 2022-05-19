@@ -1,0 +1,188 @@
+uid: mherwege:virtualLightSensor
+label: Virtual Outside Light Sensor
+description: Get outside light theoretical illuminance and illuminance corrected for cloud layer.
+configDescriptions:
+  - name: totalRadiation
+    type: TEXT
+    label: Total Radiation
+    context: item
+    required: true
+    description: Item containing the current total radiation value, can be obtained with the Astro binding
+    filterCriteria:
+      - name: type
+        value: Number
+  - name: cloudiness
+    type: TEXT
+    label: Cloudiness
+    context: item
+    required: true
+    description: Item containing the current cloudiness value. This can an okta value obtained with the Synop Analyzer binding, or a cloudiness percentage value from a weather binding or service.
+    filterCriteria:
+      - name: type
+        value: Number
+  - name: percent
+    type: BOOLEAN
+    label: Percent
+    required: false
+    defaultValue: false
+    description: False if using okta value as an input for cloudiness (default), true for cloudiness expressed in percentage.
+  - name: lux
+    type: TEXT
+    label: Lux
+    context: item
+    required: false
+    description: Item to store radiation in lx, Number:Illuminance
+    filterCriteria:
+      - name: type
+        value: Number:Illuminance
+  - name: weightedLux
+    type: TEXT
+    label: Weighted Lux
+    context: item
+    required: false
+    description: Item to store radiation in lx corrected for cloud layer, Number:Illuminance
+    filterCriteria:
+      - name: type
+        value: Number:Illuminance
+triggers:
+  - id: "1"
+    configuration:
+      itemName: "{{totalRadiation}}"
+    type: core.ItemStateChangeTrigger
+  - id: "2"
+    configuration:
+      itemName: "{{cloudiness}}"
+    type: core.ItemStateChangeTrigger
+conditions: []
+actions:
+  - inputs: {}
+    id: "3"
+    configuration:
+      type: application/javascript
+      script: >
+        if(typeof(require) === "function") Object.assign(this,
+        require('@runtime'));
+
+
+        /*
+
+        Rule to calculate outside light lux values.
+
+        Based on Domoticz LUA script at https://www.domoticz.com/wiki/Lua_dzVents_-_Solar_Data:_Azimuth_Altitude_Lux
+
+        Authors: Sebastien Joly, Neutrino, Jmleglise
+
+
+        Adapted to openHab rule by mherwege
+
+        06-May-2022 Added support for cloudiness expressed in percentage, make more robust
+
+        05-May-2022 Converted to jscript and rule template
+
+        08-Feb-2019 Converted to a jython rule
+
+        23-Jun-2017	Modified to use Okta from Synop Analyzer binding and Radiation from Astro binding
+        			These bindings already do most of the queries and calculations
+        */
+
+
+        var unDefType = (typeof(require) === "function") ? UnDefType : UnDefType.class;
+
+
+        var logger = (logger === undefined) ? Java.type("org.slf4j.LoggerFactory").getLogger("org.openhab.model.script.mherwege.virtualLightSensor") : logger;
+
+
+        // items used for input and output
+
+        var TOTAL_RADIATION = "{{totalRadiation}}";    // total solar radiation, from Astro binding
+
+        var CLOUDINESS      = "{{cloudiness}}";        // current okta value (indicator for cloud layer) from Synop Analyzer binding, or cloudiness % from a weather binding or service
+
+        var LUX             = "{{lux}}";               // stores radiation in Lux, Number:Illuminance
+
+        var WEIGHTED_LUX    = "{{weightedLux}}";       // stores radiation in Lux corrected for cloud layer, Number:Illuminance
+
+
+        // false if cloudiness expressed as okta value, true if expressed as % cloudiness
+
+        var PERCENT = {{percent}};
+
+
+        // mapping table for cloudiness % to okta:
+
+        //            cloudiness % =   0    => okta = 0
+
+        //    0    <  cloudiness % <  18.75 => okta = 1
+
+        //   18.75 <= cloudiness % <  31.25 => okta = 2
+
+        //   ...
+
+        //            cloudiness % = 100    => okta = 8
+
+        var OKTA_TABLE = [ [0, 0], [0, 1], [18.75, 2], [31.25, 3], [43.75, 4], [56.25, 5], [68.75, 6], [81.25, 7], [100, 8] ]
+
+
+        logger.info("Calculate outside light");
+
+
+        if (items[TOTAL_RADIATION].class == unDefType) {
+          logger.warn("Cannot calculate outside light, total radiation input undefined")
+          if (LUX) {
+              events.postUpdate(LUX, UNDEF);
+          }
+          if (WEIGHTED_LUX) {
+              events.postUpdate(WEIGHTED_LUX, UNDEF);
+          }
+          exit;
+        }
+
+
+        // update lux
+
+        var total_radiation = items[TOTAL_RADIATION].toUnit(Units.WATT.divide(SIUnits.METRE.pow(2))).floatValue();
+
+        var lux = total_radiation / 0.0079;              // Radiation in Lux. 1 Lux = 0.0079 W/m^2
+
+        if (LUX) {
+            events.postUpdate(LUX, lux + " lx");
+        }
+
+
+        if (items[CLOUDINESS].class == unDefType) {
+          logger.warn("Cannot calculate outside light, total cloudiness input undefined")
+          if (WEIGHTED_LUX) {
+              events.postUpdate(WEIGHTED_LUX, UNDEF);
+          }
+          exit;
+        }
+
+
+        // update weighted lux
+
+        // Okta
+
+        var cloudiness = parseInt(items[CLOUDINESS]);
+
+        var okta = cloudiness;
+
+        if (PERCENT && (cloudiness !== 0)) {
+          okta = OKTA_TABLE.reduce(function (result, element) {
+            return (cloudiness >= element[0]) ? element[1] : result;
+          })
+        }
+
+        // Factor of mitigation for the cloud layer (clear_sky_index = kc)
+
+        clear_sky_index = 1.0 - 0.75 * Math.pow((okta/8.0), 3.4);
+
+        logger.debug("Kc {}", clear_sky_index);
+
+        var weightedLux = lux * clear_sky_index;         // Radiation of the sun with compensation for the cloud layer
+
+        if (WEIGHTED_LUX) {
+            events.postUpdate(WEIGHTED_LUX, weightedLux + " lx");
+        }
+
+    type: script.ScriptAction
+    
