@@ -126,7 +126,38 @@ actions:
         logger.info("Calculate outside light");
 
 
-        if (items[TOTAL_RADIATION].class == unDefType) {
+        if (items[TOTAL_RADIATION].class !== unDefType) {
+          // update lux
+          var total_radiation = items[TOTAL_RADIATION].toUnit(Units.WATT.divide(SIUnits.METRE.pow(2))).floatValue();
+          var lux = total_radiation / 0.0079;              // Radiation in Lux. 1 Lux = 0.0079 W/m^2
+          if (LUX) {
+              events.postUpdate(LUX, lux + " lx");
+          }
+
+          if (items[CLOUDINESS].class !== unDefType) {
+            // update weighted lux
+            // Okta
+            var cloudiness = parseInt(items[CLOUDINESS]);
+            var okta = cloudiness;
+            if (PERCENT && (cloudiness !== 0)) {
+              okta = OKTA_TABLE.reduce(function (result, element) {
+                return (cloudiness >= element[0]) ? element[1] : result;
+              })
+            }
+            // Factor of mitigation for the cloud layer (clear_sky_index = kc)
+            clear_sky_index = 1.0 - 0.75 * Math.pow((okta/8.0), 3.4);
+            logger.debug("Kc {}", clear_sky_index);
+            var weightedLux = lux * clear_sky_index;         // Radiation of the sun with compensation for the cloud layer
+            if (WEIGHTED_LUX) {
+                events.postUpdate(WEIGHTED_LUX, weightedLux + " lx");
+            }
+          } else {
+            logger.warn("Cannot calculate outside light, total cloudiness input undefined")
+            if (WEIGHTED_LUX) {
+                events.postUpdate(WEIGHTED_LUX, UNDEF);
+            }
+          }  
+        } else {
           logger.warn("Cannot calculate outside light, total radiation input undefined")
           if (LUX) {
               events.postUpdate(LUX, UNDEF);
@@ -134,55 +165,6 @@ actions:
           if (WEIGHTED_LUX) {
               events.postUpdate(WEIGHTED_LUX, UNDEF);
           }
-          exit;
-        }
-
-
-        // update lux
-
-        var total_radiation = items[TOTAL_RADIATION].toUnit(Units.WATT.divide(SIUnits.METRE.pow(2))).floatValue();
-
-        var lux = total_radiation / 0.0079;              // Radiation in Lux. 1 Lux = 0.0079 W/m^2
-
-        if (LUX) {
-            events.postUpdate(LUX, lux + " lx");
-        }
-
-
-        if (items[CLOUDINESS].class == unDefType) {
-          logger.warn("Cannot calculate outside light, total cloudiness input undefined")
-          if (WEIGHTED_LUX) {
-              events.postUpdate(WEIGHTED_LUX, UNDEF);
-          }
-          exit;
-        }
-
-
-        // update weighted lux
-
-        // Okta
-
-        var cloudiness = parseInt(items[CLOUDINESS]);
-
-        var okta = cloudiness;
-
-        if (PERCENT && (cloudiness !== 0)) {
-          okta = OKTA_TABLE.reduce(function (result, element) {
-            return (cloudiness >= element[0]) ? element[1] : result;
-          })
-        }
-
-        // Factor of mitigation for the cloud layer (clear_sky_index = kc)
-
-        clear_sky_index = 1.0 - 0.75 * Math.pow((okta/8.0), 3.4);
-
-        logger.debug("Kc {}", clear_sky_index);
-
-        var weightedLux = lux * clear_sky_index;         // Radiation of the sun with compensation for the cloud layer
-
-        if (WEIGHTED_LUX) {
-            events.postUpdate(WEIGHTED_LUX, weightedLux + " lx");
         }
 
     type: script.ScriptAction
-   
