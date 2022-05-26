@@ -294,7 +294,7 @@ actions:
           logger.trace("JSON Collections: {}", response);
           var json = response ? parseJSON(response) : undefined;
           var collections = json ? json.items.filter(function(collection) {
-              return ((collection.type === "collection") && ((collection.exception === undefined) || (collection.exception.replaceBy === undefined)))
+              return ((collection.type === "collection") && ((collection.exception === undefined) || (collection.exception.replacedBy === undefined)))
             }).map(function(collection) {
               return { "timestamp": collection.timestamp.split("T")[0], "fraction": collection.fraction.name.en.toLowerCase() }
             }).sort(function(collection1, collection2) {
