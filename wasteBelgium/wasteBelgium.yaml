@@ -242,7 +242,7 @@ actions:
           var header = { "X-secret": X_SECRET, "X-consumer": X_CONSUMER };
           var url = URL + "access-token";
           logger.trace("URL: {}", url);
-          var response = HTTP.sendHttpGetRequest(url, header, TIMEOUT_MS);
+          var response = HTTP.sendHttpGetRequest(encodeURI(url), header, TIMEOUT_MS);
           logger.debug("JSON Token: {}", response);
           var json = parseJSON(response);
           return json ? json.accessToken : undefined;
@@ -273,7 +273,7 @@ actions:
           // check street address
           var url = URL + "streets?q=" + STREET + "&zipcodes=" + zipId;
           logger.trace("URL: {}", url);
-          var response = HTTP.sendHttpGetRequest(url, header, TIMEOUT_MS);
+          var response = HTTP.sendHttpGetRequest(encodeURI(url), header, TIMEOUT_MS);
           logger.debug("JSON Street: {}", response);
           var json = response ? parseJSON(response) : undefined;
           return json ? (json.items[0] ? json.items[0].id : false) : undefined;
@@ -290,7 +290,7 @@ actions:
           var untilDate = now.plusDays(DAYS).format(dateFormat);
           var url = URL + "collections?zipcodeId=" + zipId + "&streetId=" + streetId + "&houseNumber=" + NUMBER + "&fromDate=" + fromDate + "&untilDate=" + untilDate;
           logger.trace("URL: {}", url);
-          var response = HTTP.sendHttpGetRequest(url, header, TIMEOUT_MS);
+          var response = HTTP.sendHttpGetRequest(encodeURI(url), header, TIMEOUT_MS);
           logger.trace("JSON Collections: {}", response);
           var json = response ? parseJSON(response) : undefined;
           var collections = json ? json.items.filter(function(collection) {
