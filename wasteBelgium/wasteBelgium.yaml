@@ -90,6 +90,16 @@ configDescriptions:
     filterCriteria:
       - name: type
         value: DateTime
+  - name: glass
+    type: TEXT
+    label: Glass Item
+    context: item
+    required: false
+    defaultValue: ""
+    description: Item to store next glass collection date
+    filterCriteria:
+      - name: type
+        value: DateTime
   - name: bulkyWaste
     type: TEXT
     label: Bulky Waste Item
@@ -146,13 +156,14 @@ actions:
         // items to update, fraction is lowercase (sub)string(s) to match in API response
 
         var WASTE_ITEMS = {
-          RESIDUAL_WASTE:  { "item": "{{residualWaste}}",  "fraction": [ "residual" , "huisvuil"     ] },
-          PMD:             { "item": "{{pmd}}",            "fraction": [ "pmd"                       ] },
-          GFT:             { "item": "{{gft}}",            "fraction": [ "gft", "vegetable"          ] },
-          PAPER_CARDBOARD: { "item": "{{paperCardboard}}", "fraction": [ "paper"                     ] },
-          TEXTILE:         { "item": "{{textile}}",        "fraction": [ "textile"                   ] },
-          PRUNING_WOOD:    { "item": "{{pruningWood}}",    "fraction": [ "pruning"                   ] },
-          BULKY_WASTE:     { "item": "{{bulkyWaste}}",     "fraction": [ "bulky"                     ] }
+          RESIDUAL_WASTE:  { "item": "{{residualWaste}}",  "fraction": [ "residual" , "huisvuil"       ] },
+          PMD:             { "item": "{{pmd}}",            "fraction": [ "pmd"                         ] },
+          GFT:             { "item": "{{gft}}",            "fraction": [ "gft", "vegetable", "kitchen" ] },
+          PAPER_CARDBOARD: { "item": "{{paperCardboard}}", "fraction": [ "paper"                       ] },
+          TEXTILE:         { "item": "{{textile}}",        "fraction": [ "textile"                     ] },
+          PRUNING_WOOD:    { "item": "{{pruningWood}}",    "fraction": [ "pruning", "verhakselen"      ] },
+          GLASS:           { "item": "{{glass}},           "fraction": [ "glass"                       ] },
+          BULKY_WASTE:     { "item": "{{bulkyWaste}}",     "fraction": [ "bulky"                       ] }
         };
 
 
