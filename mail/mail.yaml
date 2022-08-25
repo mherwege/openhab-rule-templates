@@ -1,0 +1,178 @@
+uid: mherwege:blocky:mail
+tags: []
+props:
+  parameters: []
+  parameterGroups: []
+timestamp: Aug 25, 2022, 7:32:47 PM
+component: BlockLibrary
+config:
+  name: Mail
+slots:
+  blocks:
+    - component: BlockType
+      config:
+        type: send_mail
+        message0: Send %1 mail from server %2 to %3 with subject %4 and content %5
+        args0:
+          - type: field_dropdown
+            name: TYPE
+            align: right
+            options:
+              - - text
+                - ""
+              - - html
+                - Html
+          - type: input_value
+            name: SERVER
+            align: right
+            check: String
+          - type: input_value
+            name: RECIPIENTS
+            align: right
+            check: String
+          - type: input_value
+            name: SUBJECT
+            align: right
+            check: String
+          - type: input_value
+            name: CONTENT
+            align: right
+            check: String
+        colour: 0
+        tooltip: Send text or html mail to recipient(s) with subject and content.
+        previousStatement: ""
+        nextStatement: ""
+        inputsInline: false
+      slots:
+        code:
+          - component: BlockCodeTemplate
+            config:
+              template: >
+                {{utility:Things}}.getActions('mail', {{input:SERVER}}).send{{field:TYPE}}Mail({{input:RECIPIENTS}}, {{input:SUBJECT}}, {{input:CONTENT}});
+        toolbox:
+          - component: PresetField
+            config:
+              name: TYPE
+              value:
+                - - text
+                  - ""
+          - component: PresetInput
+            config:
+              name: SERVER
+              shadow: true
+              type: oh_thing
+          - component: PresetInput
+            config:
+              fields:
+                TEXT: recipients
+              name: RECIPIENTS
+              shadow: true
+              type: text
+          - component: PresetInput
+            config:
+              fields:
+                TEXT: subject
+              name: SUBJECT
+              shadow: true
+              type: text
+          - component: PresetInput
+            config:
+              fields:
+                TEXT: message
+              name: CONTENT
+              shadow: true
+              type: text
+    - component: BlockType
+      config:
+        type: send_mail_with_attachments
+        message0: Send %1 mail from server %2 to %3 with subject %4 and content %5 include attachment(s) %6
+        args0:
+          - type: field_dropdown
+            name: TYPE
+            align: right
+            options:
+              - - text
+                - ""
+              - - html
+                - Html
+          - type: input_value
+            name: SERVER
+            align: right
+            check: String
+          - type: input_value
+            name: RECIPIENTS
+            align: right
+            check: String
+          - type: input_value
+            name: SUBJECT
+            align: right
+            check: String
+          - type: input_value
+            name: CONTENT
+            align: right
+            check: String
+          - type: input_value
+            name: ATTACHMENTS
+            align: right
+            check:
+              - String
+              - Array
+        colour: 0
+        tooltip: Send text or html mail to recipient(s) with subject and content. If attachment URL(s) and/or file(s) are provided, these will be included in the message. Multiple attachments have to be provided using a list block.
+        previousStatement: ""
+        nextStatement: ""
+        inputsInline: false
+      slots:
+        code:
+          - component: BlockCodeTemplate
+            config:
+              template: >
+                if (typeof {{input:ATTACHMENTS}} === "string")
+                  {{utility:Things}}.getActions('mail', {{input:SERVER}}).send{{field:TYPE}}MailWithAttachment({{input:RECIPIENTS}}, {{input:SUBJECT}}, {{input:CONTENT}}, {{input:ATTACHMENTS}});
+                else
+                  {{utility:Things}}.getActions('mail', {{input:SERVER}}).send{{field:TYPE}}MailWithAttachments({{input:RECIPIENTS}}, {{input:SUBJECT}}, {{input:CONTENT}}, {{input:ATTACHMENTS}});
+        toolbox:
+          - component: PresetField
+            config:
+              name: TYPE
+              value:
+                - - text
+                  - ""
+          - component: PresetInput
+            config:
+              name: SERVER
+              shadow: true
+              type: oh_thing
+          - component: PresetInput
+            config:
+              fields:
+                TEXT: recipients
+              name: RECIPIENTS
+              shadow: true
+              type: text
+          - component: PresetInput
+            config:
+              fields:
+                TEXT: subject
+              name: SUBJECT
+              shadow: true
+              type: text
+          - component: PresetInput
+            config:
+              fields:
+                TEXT: message
+              name: CONTENT
+              shadow: true
+              type: text
+          - component: PresetInput
+            config:
+              fields:
+                TEXT: URL for attachment, use list block for multiple
+              name: ATTACHMENTS
+              shadow: true
+              type: text
+  utilities:
+    - component: UtilityJavaType
+      config:
+        javaClass: org.openhab.core.model.script.actions.Things
+        name: Things
