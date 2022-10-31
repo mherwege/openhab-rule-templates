@@ -162,7 +162,7 @@ actions:
           PAPER_CARDBOARD: { "item": "{{paperCardboard}}", "fraction": [ "paper"                       ] },
           TEXTILE:         { "item": "{{textile}}",        "fraction": [ "textile"                     ] },
           PRUNING_WOOD:    { "item": "{{pruningWood}}",    "fraction": [ "pruning", "verhakselen"      ] },
-          GLASS:           { "item": "{{glass}},           "fraction": [ "glass"                       ] },
+          GLASS:           { "item": "{{glass}}",          "fraction": [ "glass"                       ] },
           BULKY_WASTE:     { "item": "{{bulkyWaste}}",     "fraction": [ "bulky"                       ] }
         };
 
