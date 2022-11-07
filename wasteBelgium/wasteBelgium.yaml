@@ -185,7 +185,9 @@ actions:
 
         var X_CONSUMER = "recycleapp.be";
 
-        var URL = "https://recycleapp.be/api/app/v1/";
+        var CONTENT_TYPE = "application/json;charset=UTF-8";
+
+        var URL = "https://api.fostplus.be/recycle-public/app/v1/";
 
 
         /**
@@ -284,7 +286,7 @@ actions:
           // check street address
           var url = URL + "streets?q=" + STREET + "&zipcodes=" + zipId;
           logger.trace("URL: {}", url);
-          var response = HTTP.sendHttpGetRequest(encodeURI(url), header, TIMEOUT_MS);
+          var response = HTTP.sendHttpPostRequest(encodeURI(url), CONTENT_TYPE, "", header, TIMEOUT_MS);
           logger.debug("JSON Street: {}", response);
           var json = response ? parseJSON(response) : undefined;
           return json ? (json.items[0] ? json.items[0].id : false) : undefined;
