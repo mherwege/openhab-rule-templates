@@ -75,6 +75,8 @@ actions:
 
         Adapted to openHab rule by mherwege
 
+        03-Jan-2023 Use event data from triggering item to make sure latest value is used
+
         06-May-2022 Added support for cloudiness expressed in percentage, make more robust
 
         05-May-2022 Converted to jscript and rule template
@@ -105,7 +107,7 @@ actions:
 
         // false if cloudiness expressed as okta value, true if expressed as % cloudiness
 
-        var PERCENT = {{percent}};
+        var PERCENT = false;
 
 
         // mapping table for cloudiness % to okta:
@@ -123,31 +125,45 @@ actions:
         var OKTA_TABLE = [ [0, 0], [0, 1], [18.75, 2], [31.25, 3], [43.75, 4], [56.25, 5], [68.75, 6], [81.25, 7], [100, 8] ]
 
 
+        function itemState(event, name) {
+            // if the event was triggered by the item, make sure to return the event state
+            if ((event !== null) && (event.itemName.toString() === name))
+                return event.itemState;
+            return items[name];
+        }
+
+
         logger.info("Calculate outside light");
 
 
-        if (items[TOTAL_RADIATION].class !== unDefType) {
+        var receivedEvent = (typeof event !== 'undefined') ? event : null;
+
+
+        var radiationState = itemState(receivedEvent, TOTAL_RADIATION);
+
+        if (radiationState.class !== unDefType) {
           // update lux
-          var total_radiation = items[TOTAL_RADIATION].toUnit(Units.WATT.divide(SIUnits.METRE.pow(2))).floatValue();
-          var lux = total_radiation / 0.0079;              // Radiation in Lux. 1 Lux = 0.0079 W/m^2
+          var totalRadiation = radiationState.toUnit(Units.WATT.divide(SIUnits.METRE.pow(2))).floatValue();
+          var lux = totalRadiation / 0.0079;              // Radiation in Lux. 1 Lux = 0.0079 W/m^2
           if (LUX) {
               events.postUpdate(LUX, lux + " lx");
           }
 
-          if (items[CLOUDINESS].class !== unDefType) {
+          var cloudinessState = itemState(receivedEvent, CLOUDINESS);
+          if (cloudinessState.class !== unDefType) {
             // update weighted lux
             // Okta
-            var cloudiness = parseInt(items[CLOUDINESS]);
+            var cloudiness = parseInt(cloudinessState);
             var okta = cloudiness;
             if (PERCENT && (cloudiness !== 0)) {
               okta = OKTA_TABLE.reduce(function (result, element) {
                 return (cloudiness >= element[0]) ? element[1] : result;
               })
             }
-            // Factor of mitigation for the cloud layer (clear_sky_index = kc)
-            clear_sky_index = 1.0 - 0.75 * Math.pow((okta/8.0), 3.4);
-            logger.debug("Kc {}", clear_sky_index);
-            var weightedLux = lux * clear_sky_index;         // Radiation of the sun with compensation for the cloud layer
+            // Factor of mitigation for the cloud layer (clearSkyIndex = kc)
+            clearSkyIndex = 1.0 - 0.75 * Math.pow((okta/8.0), 3.4);
+            logger.debug("Kc {}", clearSkyIndex);
+            var weightedLux = lux * clearSkyIndex;         // Radiation of the sun with compensation for the cloud layer
             if (WEIGHTED_LUX) {
                 events.postUpdate(WEIGHTED_LUX, weightedLux + " lx");
             }
