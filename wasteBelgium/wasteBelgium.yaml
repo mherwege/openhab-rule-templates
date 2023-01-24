@@ -156,14 +156,14 @@ actions:
         // items to update, fraction is lowercase (sub)string(s) to match in API response
 
         var WASTE_ITEMS = {
-          RESIDUAL_WASTE:  { "item": "{{residualWaste}}",  "fraction": [ "residu", "huisvuil"          ] },
-          PMD:             { "item": "{{pmd}}",            "fraction": [ "pmd"                         ] },
-          GFT:             { "item": "{{gft}}",            "fraction": [ "gft", "vegetable", "kitchen" ] },
-          PAPER_CARDBOARD: { "item": "{{paperCardboard}}", "fraction": [ "paper"                       ] },
-          TEXTILE:         { "item": "{{textile}}",        "fraction": [ "textile"                     ] },
-          PRUNING_WOOD:    { "item": "{{pruningWood}}",    "fraction": [ "pruning", "verhakselen"      ] },
-          GLASS:           { "item": "{{glass}}",          "fraction": [ "glass"                       ] },
-          BULKY_WASTE:     { "item": "{{bulkyWaste}}",     "fraction": [ "bulky"                       ] }
+          RESIDUAL_WASTE:  { "item": "{{residualWaste}}",  "fraction": [ "residu", "huisvuil", "omb"                 ] },
+          PMD:             { "item": "{{pmd}}",            "fraction": [ "pmd"                                       ] },
+          GFT:             { "item": "{{gft}}",            "fraction": [ "gft", "vegetable", "kitchen", "organiques" ] },
+          PAPER_CARDBOARD: { "item": "{{paperCardboard}}", "fraction": [ "paper"                                     ] },
+          TEXTILE:         { "item": "{{textile}}",        "fraction": [ "textile"                                   ] },
+          PRUNING_WOOD:    { "item": "{{pruningWood}}",    "fraction": [ "pruning", "verhakselen"                    ] },
+          GLASS:           { "item": "{{glass}}",          "fraction": [ "glass"                                     ] },
+          BULKY_WASTE:     { "item": "{{bulkyWaste}}",     "fraction": [ "bulky"                                     ] }
         };
 
 
