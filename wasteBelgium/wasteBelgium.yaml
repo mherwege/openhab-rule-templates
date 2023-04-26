@@ -212,7 +212,7 @@ actions:
             timer.cancel();
           }
 
-          timer = ScriptExecution.createTimerWithArgument(ZonedDateTime.now().plus(delayInSeconds, ChronoUnit.SECONDS), func, function() {
+          timer = ScriptExecution.createTimerWithArgument(now.plus(delayInSeconds, ChronoUnit.SECONDS), func, function() {
             logger.trace("Attempt {} of {}", attempt, MAX_RETRIES);
             updateComplete = func(failFunc);
             if (!updateComplete) {
