@@ -156,7 +156,7 @@ actions:
         // items to update, fraction is lowercase (sub)string(s) to match in API response
 
         var WASTE_ITEMS = {
-          RESIDUAL_WASTE:  { "item": "{{residualWaste}}",  "fraction": [ "residu", "huisvuil", "omb"                 ] },
+          RESIDUAL_WASTE:  { "item": "{{residualWaste}}",  "fraction": [ "residu", "huisvuil", "omb", "restafval"    ] },
           PMD:             { "item": "{{pmd}}",            "fraction": [ "pmd"                                       ] },
           GFT:             { "item": "{{gft}}",            "fraction": [ "gft", "vegetable", "kitchen", "organiques" ] },
           PAPER_CARDBOARD: { "item": "{{paperCardboard}}", "fraction": [ "paper"                                     ] },
