@@ -3,4 +3,4 @@ A rule generated from this template will calculate and update the outside light 
 See https://community.openhab.org/t/virtual-solar-light-sensor/135719 for full documentation.
 
 # Rules Language
-ECMAScript 5.1
+ECMAScript 5.1 and ECMAScript 2022+ (ES6 version)
