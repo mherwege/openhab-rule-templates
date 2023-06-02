@@ -3,4 +3,4 @@ Rules generated from this template will update a number of items with the next d
 See https://community.openhab.org/t/waste-collection-belgium/135739 for full documentation.
 
 # Rules Language
-ECMAScript 5.1
+ECMAScript 5.1 and ECMAScript 2022+ (ES6 version)
