@@ -338,13 +338,13 @@ actions:
                   // update items
                   for (var wasteItem in WASTE_ITEMS) {
                     var item = items.getItem(WASTE_ITEMS[wasteItem].item, true);
-                    if (item && item.type === "DateTime") {
+                    if (item && item.type === "DateTimeItem") {
                       var waste = collections ? collections.filter(function(collection) {
                           return WASTE_ITEMS[wasteItem].fraction.reduce(function(result, fraction) {
                             return result || (collection.fraction.indexOf(fraction) >= 0)
                           }, false)
                         })[0] : undefined;
-                      item.postUpdate(waste ? waste.timestamp : UNDEF);
+                      item.postUpdate(waste ? waste.timestamp : "UNDEF");
                     }
                   }
                   logger.info("Successfully updated waste calendar");
@@ -374,8 +374,8 @@ actions:
           // Failed, keep dates in items unless it is in the past
           for (var wasteItem in WASTE_ITEMS) {
             var item = items.getItem(WASTE_ITEMS[wasteItem].item, true);
-            if (item && time.ZonedDateTime.now().isAfterDate(item)) {
-              item.postUpdate(UNDEF);
+            if (item && item.state !== "NULL" && item.state !== "UNDEF" && time.ZonedDateTime.now().isAfterDate(item.state)) {
+              item.postUpdate("UNDEF");
             }
           }
         };
