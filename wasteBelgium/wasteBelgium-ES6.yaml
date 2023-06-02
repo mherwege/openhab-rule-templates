@@ -1,0 +1,409 @@
+uid: mherwege:wasteBelgium
+label: Waste Collection Belgium
+description: Get next waste collection dates for multiple waste fractions.
+configDescriptions:
+  - name: time
+    type: TEXT
+    label: Time
+    context: time
+    required: true
+    description: Time of day to trigger the rule
+    defaultValue: 00:00:00
+  - name: street
+    type: TEXT
+    label: Street
+    required: true
+    description: Street for collection
+  - name: number
+    type: TEXT
+    label: Street number
+    required: true
+    description: Street number for collection
+  - name: zip
+    type: TEXT
+    label: Zip code
+    required: true
+    description: Zip code for collection
+  - name: days
+    type: INTEGER
+    label: Days
+    required: false
+    description: Number of days to look ahead
+    defaultValue: 60
+  - name: residualWaste
+    type: TEXT
+    label: Residual Waste Item
+    context: item
+    required: false
+    defaultValue: ""
+    description: Item to store next residual waste collection date
+    filterCriteria:
+      - name: type
+        value: DateTime
+  - name: pmd
+    type: TEXT
+    label: PMD Item
+    context: item
+    required: false
+    defaultValue: ""
+    description: Item to store next PMD collection date
+    filterCriteria:
+      - name: type
+        value: DateTime
+  - name: gft
+    type: TEXT
+    label: GFT Item
+    context: item
+    required: false
+    defaultValue: ""
+    description: Item to store next GFT collection date
+    filterCriteria:
+      - name: type
+        value: DateTime
+  - name: paperCardboard
+    type: TEXT
+    label: Paper and Cardboard Item
+    context: item
+    required: false
+    defaultValue: ""
+    description: Item to store next paper and cardboard collection date
+    filterCriteria:
+      - name: type
+        value: DateTime
+  - name: textile
+    type: TEXT
+    label: Textile Item
+    context: item
+    required: false
+    defaultValue: ""
+    description: Item to store next textile collection date
+    filterCriteria:
+      - name: type
+        value: DateTime
+  - name: pruningWood
+    type: TEXT
+    label: Pruning Wood Item
+    context: item
+    required: false
+    defaultValue: ""
+    description: Item to store next pruning wood collection date
+    filterCriteria:
+      - name: type
+        value: DateTime
+  - name: glass
+    type: TEXT
+    label: Glass Item
+    context: item
+    required: false
+    defaultValue: ""
+    description: Item to store next glass collection date
+    filterCriteria:
+      - name: type
+        value: DateTime
+  - name: bulkyWaste
+    type: TEXT
+    label: Bulky Waste Item
+    context: item
+    required: false
+    defaultValue: ""
+    description: Item to store next bulky waste collection date
+    filterCriteria:
+      - name: type
+        value: DateTime
+triggers:
+  - id: "1"
+    configuration:
+      time: "{{time}}"
+    type: timer.TimeOfDayTrigger
+conditions: []
+actions:
+  - inputs: {}
+    id: "1"
+    configuration:
+      type: application/javascript
+      script: >
+        'use strict';
+
+
+        var logger = log("wastebelgium");
+
+        var dateFormat = time.DateTimeFormatter.ISO_LOCAL_DATE;
+          
+
+        // address for lookup
+
+        var STREET = "{{street}}";
+
+        var NUMBER = "{{number}}";
+
+        var ZIP    = "{{zip}}";
+
+
+        // number of days to look ahead
+
+        var DAYS = "{{days}}";
+
+
+        // items to update, fraction is lowercase (sub)string(s) to match in API response
+
+        var WASTE_ITEMS = {
+          RESIDUAL_WASTE:  { "item": "{{residualWaste}}",  "fraction": [ "residu", "huisvuil", "omb", "restafval"    ] },
+          PMD:             { "item": "{{pmd}}",            "fraction": [ "pmd"                                       ] },
+          GFT:             { "item": "{{gft}}",            "fraction": [ "gft", "vegetable", "kitchen", "organiques" ] },
+          PAPER_CARDBOARD: { "item": "{{paperCardboard}}", "fraction": [ "paper"                                     ] },
+          TEXTILE:         { "item": "{{textile}}",        "fraction": [ "textile"                                   ] },
+          PRUNING_WOOD:    { "item": "{{pruningWood}}",    "fraction": [ "pruning", "verhakselen"                    ] },
+          GLASS:           { "item": "{{glass}}",          "fraction": [ "glass"                                     ] },
+          BULKY_WASTE:     { "item": "{{bulkyWaste}}",     "fraction": [ "bulky"                                     ] }
+        };
+
+
+        // secret to get token, needs to be updated when changed on the website
+
+        var X_SECRET = "8eTFgy3AQH0mzAcj3xMwaKnNyNnijEFIEegjgNpBHifqtQ4IEyWqmJGFz3ggKQ7B4vwUYS8xz8KwACZihCmboGb6brtVB3rpne2Ww5uUM2n3i4SKNUg6Vp7lhAS8INDUNH8Ll7WPhWRsQOXBCjVz5H8fr0q6fqZCosXdndbNeiNy73FqJBn794qKuUAPTFj8CuAbwI6Wom98g72Px1MPRYHwyrlHUbCijmDmA2zoWikn34LNTUZPd7kS0uuFkibkLxCc1PeOVYVHeh1xVxxwGBsMINWJEUiIBqZt9VybcHpUJTYzureqfund1aeJvmsUjwyOMhLSxj9MLQ07iTbvzQa6vbJdC0hTsqTlndccBRm9lkxzNpzJBPw8VpYSyS3AhaR2U1n4COZaJyFfUQ3LUBzdj5gV8QGVGCHMlvGJM0ThnRKENSWZLVZoHHeCBOkfgzp0xl0qnDtR8eJF0vLkFiKwjX7DImGoA8IjqOYygV3W9i9rIOfK";
+
+        var TIMEOUT_MS = 5000;
+
+        var MAX_RETRIES = 10;
+
+        var INTERVAL_S = 60;
+
+        var INTERVAL_SCALE_FACTOR_1 = 2;
+
+        var INTERVAL_SCALE_FACTOR_2 = 5;
+
+
+        var X_CONSUMER = "recycleapp.be";
+
+        var CONTENT_TYPE = "application/json;charset=UTF-8";
+
+        var URL = "https://api.fostplus.be/recycle-public/app/v1/";
+
+
+        /**
+         * Kick off func and retry until func returns true, calls itself until MAX_RETRIES is reached. Retry intervals are scaled up after a few retries.
+         * Retries are governed by a number of constants:
+         *    MAX_RETRIES: max number of retries before giving up.
+         *    INTERVAL_S: base interval for retries.
+         *    INTERVAL_SCALE_FACTOR_1: multiplies the base interval between retries with this factor after 3 tries.
+         *    INTERVAL_SCALE_FACTOR_2: multiplies the base interval between retries with this factor after 5 tries.
+         * @param {function} func to call, should return true if successful and no further retries should be attempted.
+         * @param {function} failFunc to call if none of the attempts is succesful.
+         * @param {int} delayInSeconds, default 0. This is used to delay retries.
+         * @param {int} attempt in the retry loop, default 1 at initial call. This is used for retries only, to keep track of iterative attempts.
+         */
+        function updateWithRetry(func, failFunc, delayInSeconds, attempt) {
+          attempt = (attempt === undefined) ? 1 : attempt;
+          delayInSeconds = (delayInSeconds === undefined) ? 0 : delayInSeconds;
+          
+          // Check if there is still a retry attempt scheduled from a previous call of the rule
+          if(timer) {
+            logger.debug("Cancelling scheduled attempt {}", attempt);
+            clearTimeout(timer);
+          }
+
+          timer = setTimeout(() => {
+            logger.trace("Attempt {} of {}", attempt, MAX_RETRIES);
+            updateComplete = func(failFunc);
+            if (!updateComplete) {
+              logger.debug("Request failed, attempt {} of {}", attempt, MAX_RETRIES);
+              if (attempt < MAX_RETRIES) {
+                var interval = INTERVAL_S * ((attempt >= 5) ? INTERVAL_SCALE_FACTOR_2 : (attempt >= 3) ? INTERVAL_SCALE_FACTOR_1 : 1);
+                logger.debug("Next attempt in {}s", interval);
+                updateWithRetry(func, failFunc, interval, attempt + 1);
+              } else {
+                failFunc();
+              }
+            }
+          }, 1000 * delayInSeconds);
+        }
+
+
+        /**
+         * Parse JSON string and return object if valid, return false if not.
+         * @param {string} jsonString to be parsed.
+         * @return {*} parsed object or false if not a valid JSON.
+         */
+        var parseJSON = function(jsonString) {
+            try {
+                var object = JSON.parse(jsonString);
+                if (object && typeof object === "object") {
+                    return object;
+                }
+            }
+            catch (e) { }
+            return false;
+        };
+
+
+        /**
+         * Get access token.
+         * @return {*} access token, undefined if http request failed.
+         */
+        var getToken = function() {
+          // get token
+          var header = { "X-secret": X_SECRET, "X-consumer": X_CONSUMER };
+          var url = URL + "access-token";
+          logger.trace("URL: {}", url);
+          var response = actions.HTTP.sendHttpGetRequest(url, header, TIMEOUT_MS);
+          logger.debug("JSON Token: {}", response);
+          var json = parseJSON(response);
+          return json ? json.accessToken : undefined;
+        };
+
+
+        /**
+         * Get zipId from ZIP constant.
+         * @return {*} zipId or false if zip code could not be parsed to valid zip id, undefined if http request failed.
+         */
+        var getZipId = function() {
+          // check zip code
+          var url = URL + "zipcodes?q=" + ZIP;
+          logger.trace("URL: {}", url);
+          var response = actions.HTTP.sendHttpGetRequest(encodeURI(url), header, TIMEOUT_MS);
+          logger.debug("JSON Zip: {}", response);
+          var json = response ? parseJSON(response) : undefined;
+          city = json && json.items[0] && json.items[0].city ? json.items[0].city.name : "";
+          return json ? (json.items[0] ? json.items[0].id : false) : undefined;
+        };
+
+
+        /**
+         * Get streetId from STREET constant and zipId variable.
+         * @return {*} streetId or false if street could not be found, undefined if http request failed.
+         */
+        var getStreetId = function() {
+          // check street address
+          var url = URL + "streets?q=" + STREET + "&zipcodes=" + zipId;
+          logger.trace("URL: {}", url);
+          var response = actions.HTTP.sendHttpPostRequest(encodeURI(url), CONTENT_TYPE, "", header, TIMEOUT_MS);
+          logger.debug("JSON Street: {}", response);
+          var json = response ? parseJSON(response) : undefined;
+          return json ? (json.items[0] ? json.items[0].id : false) : undefined;
+        };
+
+
+        /**
+         * Get collections for known zipId and streetId.
+         * @return {*} collections, undefined if http request failed.
+         */
+        var getCollections = function() {
+          // get waste collection dates
+          var fromDate = now.format(dateFormat);
+          var untilDate = now.plusDays(DAYS).format(dateFormat);
+          var url = URL + "collections?zipcodeId=" + zipId + "&streetId=" + streetId + "&houseNumber=" + NUMBER + "&fromDate=" + fromDate + "&untilDate=" + untilDate;
+          logger.trace("URL: {}", url);
+          var response = actions.HTTP.sendHttpGetRequest(encodeURI(url), header, TIMEOUT_MS);
+          logger.trace("JSON Collections: {}", response);
+          var json = response ? parseJSON(response) : undefined;
+          var collections = json ? json.items.filter(function(collection) {
+              return ((collection.type === "collection") && ((collection.exception === undefined) || (collection.exception.replacedBy === undefined)))
+            }).map(function(collection) {
+              return { "timestamp": collection.timestamp.split("T")[0], "fraction": collection.fraction.name.en.toLowerCase() }
+            }).sort(function(collection1, collection2) {
+              return (collection1.timestamp > collection2.timestamp)
+            }) : undefined;
+          logger.debug("Collections: {}", collections ? JSON.stringify(collections) : "{}");
+          if (collections && collections.length === 0) {
+            logger.warn("No collections found for address: {} {}, {} {}", [STREET, NUMBER, ZIP, city]);
+          }
+          return collections;
+        };
+
+
+        /**
+         * Update waste calendar, calling the webservices, and return true when webservice communication fully succeeded.
+         * @param {function} failFunc to call if zip code or street not valid (but communication successful).
+         * @return {boolean} true if queries succeeded, false if communication error.
+         */
+        var updateWasteCalendar = function(failFunc) {
+          timer = null;
+          token = !token ? getToken() : token;
+          if (token) {
+            header = { "Authorization": token, "X-consumer": X_CONSUMER };
+            zipId = !zipId ? getZipId() : zipId;
+            if (zipId === false) {
+              failFunc();
+              return true;
+            }
+            if (zipId) {
+              streetId = !streetId ? getStreetId() : streetId;
+              if (streetId === false) {
+                failFunc();
+                return true;
+              }
+              if (streetId) {
+                collections = getCollections();
+                if (collections) {
+                  // update items
+                  for (var wasteItem in WASTE_ITEMS) {
+                    var item = items.getItem(WASTE_ITEMS[wasteItem].item, true);
+                    if (item && item.type === "DateTime") {
+                      var waste = collections ? collections.filter(function(collection) {
+                          return WASTE_ITEMS[wasteItem].fraction.reduce(function(result, fraction) {
+                            return result || (collection.fraction.indexOf(fraction) >= 0)
+                          }, false)
+                        })[0] : undefined;
+                      item.postUpdate(waste ? waste.timestamp : UNDEF);
+                    }
+                  }
+                  logger.info("Successfully updated waste calendar");
+                  return true;
+                }
+              }
+            }
+          }
+          return false;
+        };
+
+
+        /**
+         * To be called in unrecoverable error situation, when parameter constants contain errors or on communication error in final retry.
+         */
+        var updateFailure = function() {
+          if (!token) {
+            logger.warn("Unable to retrieve authorization token");
+          } else if (!zipId) {
+            logger.warn("Unable to validate zip code");
+          } else if (!streetId) {
+            logger.warn("Unable to validate street name");
+          } else {
+            logger.warn("Unable to retrieve collections")
+          }
+          
+          // Failed, keep dates in items unless it is in the past
+          for (var wasteItem in WASTE_ITEMS) {
+            var item = items.getItem(WASTE_ITEMS[wasteItem].item, true);
+            if (item && time.ZonedDateTime.now().isAfterDate(item)) {
+              item.postUpdate(UNDEF);
+            }
+          }
+        };
+
+
+        logger.info("Retrieving waste calendar");
+
+
+        var now = time.ZonedDateTime.now().withHour(0).withMinute(0).withSecond(0).withNano(0);
+
+
+        var header = null;
+
+        var token = null;
+
+        var zipId = null;
+
+        var city = null;
+
+        var streetId = null;
+
+        var collections = null;
+
+
+        var updateComplete = false;
+
+        var timer;
+
+
+        updateWithRetry(updateWasteCalendar, updateFailure);
+    type: script.ScriptAction
