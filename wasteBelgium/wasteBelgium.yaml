@@ -161,9 +161,9 @@ actions:
           GFT:             { "item": "{{gft}}",            "fraction": [ "gft", "vegetable", "kitchen", "organiques" ] },
           PAPER_CARDBOARD: { "item": "{{paperCardboard}}", "fraction": [ "paper"                                     ] },
           TEXTILE:         { "item": "{{textile}}",        "fraction": [ "textile"                                   ] },
-          PRUNING_WOOD:    { "item": "{{pruningWood}}",    "fraction": [ "pruning", "verhakselen"                    ] },
+          PRUNING_WOOD:    { "item": "{{pruningWood}}",    "fraction": [ "pruning", "verhakselen", "snoeihout"       ] },
           GLASS:           { "item": "{{glass}}",          "fraction": [ "glass"                                     ] },
-          BULKY_WASTE:     { "item": "{{bulkyWaste}}",     "fraction": [ "bulky"                                     ] }
+          BULKY_WASTE:     { "item": "{{bulkyWaste}}",     "fraction": [ "bulky", "grofvuil"                         ] }
         };
 
 
