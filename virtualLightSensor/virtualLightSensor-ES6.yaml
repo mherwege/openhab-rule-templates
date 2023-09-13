@@ -51,7 +51,7 @@ triggers:
     type: core.ItemStateChangeTrigger
   - id: "2"
     configuration:
-      itemName: "{{cloudiness}}"
+      itemName: "{{}}"
     type: core.ItemStateChangeTrigger
 conditions: []
 actions:
@@ -121,10 +121,16 @@ actions:
 
 
         function itemState(event, name) {
+          try {
             // if the event was triggered by the item, make sure to return the event state
             if (event && (event.itemName === name))
-                return event.itemState.toString();
-            return items.getItem(name).state;
+                return Quantity(event.itemState.toString());
+            return items[name].quantityState;
+          }
+          // failed to convert the state to a QT, it's probably NULL or UNDEF or the wrong type
+          catch(e) {
+            return null;
+          }
         }
 
 
@@ -133,46 +139,46 @@ actions:
 
         var radiationState = itemState(this.event, TOTAL_RADIATION);
 
-        if (radiationState !== "NULL" && radiationState !== "UNDEF") {
+        if (radiationState !== null) {
           // update lux
-          var totalRadiation = Quantity(radiationState).toUnit("W/m^2").float;
-          var lux = totalRadiation / 0.0079;              // Radiation in Lux. 1 Lux = 0.0079 W/m^2
+          let totalRadiation = radiationState.toUnit("W/m^2").float;
+          let lux = totalRadiation / 0.0079;              // Radiation in Lux. 1 Lux = 0.0079 W/m^2
           if (LUX) {
-              items.getItem(LUX).postUpdate(lux + " lx");
+              items[LUX].postUpdate(lux + " lx");
           }
 
-          var cloudinessState = itemState(this.event, CLOUDINESS);
-          if (cloudinessState !== "NULL" && cloudinessState !== "UNDEF") {
+          let cloudinessState = itemState(this.event, CLOUDINESS);
+          if (cloudinessState !== null) {
             // update weighted lux
             // Okta
-            var cloudiness = parseInt(cloudinessState);
-            var okta = cloudiness;
+            let cloudiness = cloudinessState.int;
+            let okta = cloudinessState.int;
             if (PERCENT && (cloudiness !== 0)) {
-              okta = OKTA_TABLE.reduce(function (result, element) {
-                return (cloudiness >= element[0]) ? element[1] : result;
-              })
+              okta = OKTA_TABLE.reduce((result, element) => (cloudiness >= element[0]) ? element[1] : result);
             }
             // Factor of mitigation for the cloud layer (clearSkyIndex = kc)
-            clearSkyIndex = 1.0 - 0.75 * Math.pow((okta/8.0), 3.4);
+            let clearSkyIndex = 1.0 - 0.75 * Math.pow((okta/8.0), 3.4);
             logger.debug("Kc {}", clearSkyIndex);
             var weightedLux = lux * clearSkyIndex;         // Radiation of the sun with compensation for the cloud layer
             if (WEIGHTED_LUX) {
-                items.getItem(WEIGHTED_LUX).postUpdate(weightedLux + " lx");
+                items[WEIGHTED_LUX].postUpdate(weightedLux + " lx");
             }
           } else {
-            logger.warn("Cannot calculate outside light, total cloudiness input undefined")
+            logger.warn("Cannot calculate outside light, total cloudiness input undefined or of the wrong format")
             if (WEIGHTED_LUX) {
-                items.getItem(WEIGHTED_LUX).postUpdate("UNDEF");
+                items[WEIGHTED_LUX].postUpdate("UNDEF");
             }
           }  
         } else {
-          logger.warn("Cannot calculate outside light, total radiation input undefined")
+          logger.warn("Cannot calculate outside light, total radiation input undefined or of the wrong format")
           if (LUX) {
-              items.getItem(LUX).postUpdate("UNDEF");
+              items[LUX].postUpdate("UNDEF");
           }
           if (WEIGHTED_LUX) {
-              items.getItem(WEIGHTED_LUX).postUpdate("UNDEF");
+              items[WEIGHTED_LUX].postUpdate("UNDEF");
           }
         }
+
+
 
     type: script.ScriptAction
