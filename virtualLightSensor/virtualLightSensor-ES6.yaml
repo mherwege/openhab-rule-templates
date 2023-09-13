@@ -51,7 +51,7 @@ triggers:
     type: core.ItemStateChangeTrigger
   - id: "2"
     configuration:
-      itemName: "{{}}"
+      itemName: "{{cloudiness}}"
     type: core.ItemStateChangeTrigger
 conditions: []
 actions:
