@@ -178,7 +178,7 @@ actions:
 
         var CONTENT_TYPE = "application/json;charset=UTF-8";
 
-        var URL = "https://api.fostplus.be/recycle-public/app/v1/";
+        var URL = "https://api.fostplus.be/recyclecms/app/v1/";
 
 
         /**
@@ -339,7 +339,7 @@ actions:
                   // update items
                   for (var wasteItem in WASTE_ITEMS) {
                     var item = items.getItem(WASTE_ITEMS[wasteItem].item, true);
-                    if (item && item.type === "DateTimeItem") {
+                    if (item && item.type.startsWith("DateTime")) {
                       var waste = collections ? collections.filter(function(collection) {
                           return WASTE_ITEMS[wasteItem].fraction.reduce(function(result, fraction) {
                             return result || (collection.fraction.indexOf(fraction) >= 0)
