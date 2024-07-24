@@ -71,6 +71,8 @@ actions:
 
         Adapted to openHab rule by mherwege
 
+        24-Jul-2024 Code improvements
+
         02-Jun-2023 Adapted for JavaScript Scripting Add-on (ES6) and OH4.0
 
         03-Jan-2023 Use event data from triggering item to make sure latest value is used
@@ -100,9 +102,10 @@ actions:
         var WEIGHTED_LUX    = "{{weightedLux}}";       // stores radiation in Lux corrected for cloud layer, Number:Illuminance
 
 
-        // false if cloudiness expressed as okta value, true if expressed as % cloudiness
+        // false if cloudiness expressed as okta value, true if expressed as %
+        cloudiness
 
-        var PERCENT = {{percent}};
+        var PERCENT = false;
 
 
         // mapping table for cloudiness % to okta:
@@ -117,7 +120,9 @@ actions:
 
         //            cloudiness % = 100    => okta = 8
 
-        var OKTA_TABLE = [ [0, 0], [0, 1], [18.75, 2], [31.25, 3], [43.75, 4], [56.25, 5], [68.75, 6], [81.25, 7], [100, 8] ]
+
+        var OKTA_TABLE = [ [0, 0], [0, 1], [18.75, 2], [31.25, 3], [43.75, 4],
+        [56.25, 5], [68.75, 6], [81.25, 7], [100, 8] ]
 
 
         function itemState(event, name) {
@@ -125,7 +130,7 @@ actions:
             // if the event was triggered by the item, make sure to return the event state
             if (event && (event.itemName === name))
                 return Quantity(event.itemState.toString());
-            return items[name].quantityState;
+            return Quantity(items[name].state);
           }
           // failed to convert the state to a QT, it's probably NULL or UNDEF or the wrong type
           catch(e) {
@@ -147,26 +152,24 @@ actions:
               items[LUX].postUpdate(lux + " lx");
           }
 
-          let cloudinessState = itemState(this.event, CLOUDINESS);
-          if (cloudinessState !== null) {
-            // update weighted lux
-            // Okta
-            let cloudiness = cloudinessState.int;
-            let okta = cloudinessState.int;
-            if (PERCENT && (cloudiness !== 0)) {
-              okta = OKTA_TABLE.reduce((result, element) => (cloudiness >= element[0]) ? element[1] : result);
-            }
-            // Factor of mitigation for the cloud layer (clearSkyIndex = kc)
-            let clearSkyIndex = 1.0 - 0.75 * Math.pow((okta/8.0), 3.4);
-            logger.debug("Kc {}", clearSkyIndex);
-            var weightedLux = lux * clearSkyIndex;         // Radiation of the sun with compensation for the cloud layer
-            if (WEIGHTED_LUX) {
-                items[WEIGHTED_LUX].postUpdate(weightedLux + " lx");
-            }
-          } else {
-            logger.warn("Cannot calculate outside light, total cloudiness input undefined or of the wrong format")
-            if (WEIGHTED_LUX) {
-                items[WEIGHTED_LUX].postUpdate("UNDEF");
+          if (WEIGHTED_LUX) {
+            let cloudinessState = itemState(this.event, CLOUDINESS);
+            if (cloudinessState !== null) {
+              // update weighted lux
+              // Okta
+              let cloudiness = cloudinessState.int;
+              let okta = cloudinessState.int;
+              if (PERCENT && (cloudiness !== 0)) {
+                okta = OKTA_TABLE.reduce((result, element) => (cloudiness >= element[0]) ? element[1] : result);
+              }
+              // Factor of mitigation for the cloud layer (clearSkyIndex = kc)
+              let clearSkyIndex = 1.0 - 0.75 * Math.pow((okta/8.0), 3.4);
+              logger.debug("Kc {}", clearSkyIndex);
+              let weightedLux = lux * clearSkyIndex;         // Radiation of the sun with compensation for the cloud layer
+              items[WEIGHTED_LUX].postUpdate(weightedLux + " lx");
+            } else {
+              logger.warn("Cannot calculate outside light, total cloudiness input undefined or of the wrong format")
+              items[WEIGHTED_LUX].postUpdate("UNDEF");
             }
           }  
         } else {
@@ -178,7 +181,5 @@ actions:
               items[WEIGHTED_LUX].postUpdate("UNDEF");
           }
         }
-
-
 
     type: script.ScriptAction
