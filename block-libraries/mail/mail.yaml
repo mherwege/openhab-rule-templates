@@ -3,7 +3,7 @@ tags: []
 props:
   parameters: []
   parameterGroups: []
-timestamp: Aug 25, 2022, 7:32:47 PM
+timestamp: Jul 24, 2024, 12:40:00 PM
 component: BlockLibrary
 config:
   name: Mail
@@ -19,6 +19,7 @@ slots:
             align: right
             check:
               - String
+              - oh_thing
           - type: input_value
             name: NAME
             align: right
@@ -73,7 +74,9 @@ slots:
           - type: input_value
             name: SERVER
             align: right
-            check: String
+            check:
+              - String
+              - oh_thing
           - type: input_value
             name: RECIPIENTS
             align: right
@@ -98,12 +101,6 @@ slots:
               template: >
                 {{utility:Things}}.getActions('mail', {{input:SERVER}}).send{{field:TYPE}}Mail({{input:RECIPIENTS}}, {{input:SUBJECT}}, {{input:CONTENT}});
         toolbox:
-          - component: PresetField
-            config:
-              name: TYPE
-              value:
-                - - text
-                  - ""
           - component: PresetInput
             config:
               name: SERVER
@@ -146,7 +143,9 @@ slots:
           - type: input_value
             name: SERVER
             align: right
-            check: String
+            check:
+              - String
+              - oh_thing
           - type: input_value
             name: RECIPIENTS
             align: right
@@ -180,12 +179,6 @@ slots:
                 else
                   {{utility:Things}}.getActions('mail', {{input:SERVER}}).send{{field:TYPE}}MailWithAttachments({{input:RECIPIENTS}}, {{input:SUBJECT}}, {{input:CONTENT}}, {{input:ATTACHMENTS}});
         toolbox:
-          - component: PresetField
-            config:
-              name: TYPE
-              value:
-                - - text
-                  - ""
           - component: PresetInput
             config:
               name: SERVER
