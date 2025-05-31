@@ -100,6 +100,26 @@ configDescriptions:
     filterCriteria:
       - name: type
         value: DateTime
+  - name: metal
+    type: TEXT
+    label: Metal Item
+    context: item
+    required: false
+    defaultValue: ""
+    description: Item to store next metal collection date
+    filterCriteria:
+      - name: type
+        value: DateTime
+  - name: wood
+    type: TEXT
+    label: Wood Item
+    context: item
+    required: false
+    defaultValue: ""
+    description: Item to store next wood collection date
+    filterCriteria:
+      - name: type
+        value: DateTime
   - name: bulkyWaste
     type: TEXT
     label: Bulky Waste Item
@@ -141,7 +161,7 @@ actions:
 
         // number of days to look ahead
 
-        var DAYS = "{{days}}";
+        var DAYS = {{days}};
 
 
         // items to update, fraction is lowercase (sub)string(s) to match in API response
@@ -154,6 +174,8 @@ actions:
           TEXTILE:         { "item": "{{textile}}",        "fraction": [ "textile"                                          ] },
           PRUNING_WOOD:    { "item": "{{pruningWood}}",    "fraction": [ "pruning", "verhakselen", "snoeihout", "kerstboom" ] },
           GLASS:           { "item": "{{glass}}",          "fraction": [ "glass"                                            ] },
+          METAL:           { "item": "{{metal}}",          "fraction": [ "metaal", "metalen"                                ] },
+          WOOD:            { "item": "{{wood}}",           "fraction": [ "hout"                                             ] },
           BULKY_WASTE:     { "item": "{{bulkyWaste}}",     "fraction": [ "bulky", "grofvuil"                                ] }
         };
 
