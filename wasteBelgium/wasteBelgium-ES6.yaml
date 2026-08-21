@@ -357,9 +357,7 @@ actions:
          * To be called in unrecoverable error situation, when parameter constants contain errors or on communication error in final retry.
          */
         var updateFailure = function() {
-          if (!token) {
-            logger.warn('Unable to retrieve authorization token');
-          } else if (!zipId) {
+          if (!zipId) {
             logger.warn('Unable to validate zip code');
           } else if (!streetId) {
             logger.warn('Unable to validate street name');
