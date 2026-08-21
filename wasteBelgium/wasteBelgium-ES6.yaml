@@ -35,7 +35,7 @@ configDescriptions:
     label: Residual Waste Item
     context: item
     required: false
-    defaultValue: ""
+    defaultValue: ''
     description: Item to store next residual waste collection date
     filterCriteria:
       - name: type
@@ -45,7 +45,7 @@ configDescriptions:
     label: PMD Item
     context: item
     required: false
-    defaultValue: ""
+    defaultValue: ''
     description: Item to store next PMD collection date
     filterCriteria:
       - name: type
@@ -55,7 +55,7 @@ configDescriptions:
     label: GFT Item
     context: item
     required: false
-    defaultValue: ""
+    defaultValue: ''
     description: Item to store next GFT collection date
     filterCriteria:
       - name: type
@@ -65,7 +65,7 @@ configDescriptions:
     label: Paper and Cardboard Item
     context: item
     required: false
-    defaultValue: ""
+    defaultValue: ''
     description: Item to store next paper and cardboard collection date
     filterCriteria:
       - name: type
@@ -75,7 +75,7 @@ configDescriptions:
     label: Textile Item
     context: item
     required: false
-    defaultValue: ""
+    defaultValue: ''
     description: Item to store next textile collection date
     filterCriteria:
       - name: type
@@ -85,7 +85,7 @@ configDescriptions:
     label: Pruning Wood Item
     context: item
     required: false
-    defaultValue: ""
+    defaultValue: ''
     description: Item to store next pruning wood collection date
     filterCriteria:
       - name: type
@@ -95,7 +95,7 @@ configDescriptions:
     label: Glass Item
     context: item
     required: false
-    defaultValue: ""
+    defaultValue: ''
     description: Item to store next glass collection date
     filterCriteria:
       - name: type
@@ -105,7 +105,7 @@ configDescriptions:
     label: Metal Item
     context: item
     required: false
-    defaultValue: ""
+    defaultValue: ''
     description: Item to store next metal collection date
     filterCriteria:
       - name: type
@@ -115,7 +115,7 @@ configDescriptions:
     label: Wood Item
     context: item
     required: false
-    defaultValue: ""
+    defaultValue: ''
     description: Item to store next wood collection date
     filterCriteria:
       - name: type
@@ -125,82 +125,79 @@ configDescriptions:
     label: Bulky Waste Item
     context: item
     required: false
-    defaultValue: ""
+    defaultValue: ''
     description: Item to store next bulky waste collection date
     filterCriteria:
       - name: type
         value: DateTime
 triggers:
-  - id: "1"
+  - id: '1'
     configuration:
-      time: "{{time}}"
+      time: '{{time}}'
     type: timer.TimeOfDayTrigger
 conditions: []
 actions:
   - inputs: {}
-    id: "1"
+    id: '1'
     configuration:
       type: application/javascript
       script: >
         'use strict';
 
 
-        var logger = log("wastebelgium");
+        var logger = log('wastebelgium');
 
         var dateFormat = time.DateTimeFormatter.ISO_LOCAL_DATE;
           
 
         // address for lookup
 
-        var STREET = "{{street}}";
+        const STREET = '{{street}}';
 
-        var NUMBER = "{{number}}";
+        const NUMBER = '{{number}}';
 
-        var ZIP    = "{{zip}}";
+        const ZIP    = '{{zip}}';
 
 
         // number of days to look ahead
 
-        var DAYS = {{days}};
+        const DAYS = {{days}};
 
 
         // items to update, fraction is lowercase (sub)string(s) to match in API response
 
-        var WASTE_ITEMS = {
-          RESIDUAL_WASTE:  { "item": "{{residualWaste}}",  "fraction": [ "residu", "huisvuil", "omb", "restafval"           ] },
-          PMD:             { "item": "{{pmd}}",            "fraction": [ "pmd"                                              ] },
-          GFT:             { "item": "{{gft}}",            "fraction": [ "gft", "vegetable", "kitchen", "organiques"        ] },
-          PAPER_CARDBOARD: { "item": "{{paperCardboard}}", "fraction": [ "paper"                                            ] },
-          TEXTILE:         { "item": "{{textile}}",        "fraction": [ "textile"                                          ] },
-          PRUNING_WOOD:    { "item": "{{pruningWood}}",    "fraction": [ "pruning", "verhakselen", "snoeihout", "kerstboom" ] },
-          GLASS:           { "item": "{{glass}}",          "fraction": [ "glass"                                            ] },
-          METAL:           { "item": "{{metal}}",          "fraction": [ "metaal", "metalen"                                ] },
-          WOOD:            { "item": "{{wood}}",           "fraction": [ "hout"                                             ] },
-          BULKY_WASTE:     { "item": "{{bulkyWaste}}",     "fraction": [ "bulky", "grofvuil"                                ] }
+        const WASTE_ITEMS = {
+          RESIDUAL_WASTE:  { 'item': '{{residualWaste}}',  'fraction': [ 'residu', 'huisvuil', 'omb', 'restafval'           ] },
+          PMD:             { 'item': '{{pmd}}',            'fraction': [ 'pmd'                                              ] },
+          GFT:             { 'item': '{{gft}}',            'fraction': [ 'gft', 'vegetable', 'kitchen', 'organiques'        ] },
+          PAPER_CARDBOARD: { 'item': '{{paperCardboard}}', 'fraction': [ 'paper'                                            ] },
+          TEXTILE:         { 'item': '{{textile}}',        'fraction': [ 'textile'                                          ] },
+          PRUNING_WOOD:    { 'item': '{{pruningWood}}',    'fraction': [ 'pruning', 'verhakselen', 'snoeihout', 'kerstboom' ] },
+          GLASS:           { 'item': '{{glass}}',          'fraction': [ 'glass'                                            ] },
+          METAL:           { 'item': '{{metal}}',          'fraction': [ 'metaal', 'metalen'                                ] },
+          WOOD:            { 'item': '{{wood}}',           'fraction': [ 'hout'                                             ] },
+          BULKY_WASTE:     { 'item': '{{bulkyWaste}}',     'fraction': [ 'bulky', 'grofvuil'                                ] }
         };
 
 
-        // secret to get token, needs to be updated when changed on the website
+        const TIMEOUT_MS = 5000;
 
-        var X_SECRET = "Op2tDi2pBmh1wzeC5TaN2U3knZan7ATcfOQgxh4vqC0mDKmnPP2qzoQusmInpglfIkxx8SZrasBqi5zgMSvyHggK9j6xCQNQ8xwPFY2o03GCcQfcXVOyKsvGWLze7iwcfcgk2Ujpl0dmrt3hSJMCDqzAlvTrsvAEiaSzC9hKRwhijQAFHuFIhJssnHtDSB76vnFQeTCCvwVB27DjSVpDmq8fWQKEmjEncdLqIsRnfxLcOjGIVwX5V0LBntVbeiBvcjyKF2nQ08rIxqHHGXNJ6SbnAmTgsPTg7k6Ejqa7dVfTmGtEPdftezDbuEc8DdK66KDecqnxwOOPSJIN0zaJ6k2Ye2tgMSxxf16gxAmaOUqHS0i7dtG5PgPSINti3qlDdw6DTKEPni7X0rxM";
+        const MAX_RETRIES = 10;
 
+        const INTERVAL_S = 60;
 
-        var TIMEOUT_MS = 5000;
+        const INTERVAL_SCALE_FACTOR_1 = 2;
 
-        var MAX_RETRIES = 10;
+        const INTERVAL_SCALE_FACTOR_2 = 5;
 
-        var INTERVAL_S = 60;
-
-        var INTERVAL_SCALE_FACTOR_1 = 2;
-
-        var INTERVAL_SCALE_FACTOR_2 = 5;
+        const TIMER_CACHE_KEY = 'wasteBelgiumTimer';
 
 
-        var X_CONSUMER = "recycleapp.be";
+        const CONTENT_TYPE = 'application/json;charset=UTF-8';
 
-        var CONTENT_TYPE = "application/json;charset=UTF-8";
+        const URL = 'https://api.fostplus.be/recyclecms/public/v1/';
 
-        var URL = "https://api.fostplus.be/recyclecms/app/v1/";
+        const HEADER = { 'X-consumer': 'recycleapp.be' };
 
 
         /**
@@ -219,26 +216,23 @@ actions:
           attempt = (attempt === undefined) ? 1 : attempt;
           delayInSeconds = (delayInSeconds === undefined) ? 0 : delayInSeconds;
           
-          // Check if there is still a retry attempt scheduled from a previous call of the rule
-          if(timer) {
-            logger.debug("Cancelling scheduled attempt {}", attempt);
-            clearTimeout(timer);
-          }
-
           timer = setTimeout(() => {
-            logger.trace("Attempt {} of {}", attempt, MAX_RETRIES);
+            logger.trace('Attempt {} of {}', attempt, MAX_RETRIES);
             updateComplete = func(failFunc);
-            if (!updateComplete) {
-              logger.debug("Request failed, attempt {} of {}", attempt, MAX_RETRIES);
+            if (updateComplete) {
+              cache.private.remove(TIMER_CACHE_KEY);
+            } else {
+              logger.debug('Request failed, attempt {} of {}', attempt, MAX_RETRIES);
               if (attempt < MAX_RETRIES) {
                 var interval = INTERVAL_S * ((attempt >= 5) ? INTERVAL_SCALE_FACTOR_2 : (attempt >= 3) ? INTERVAL_SCALE_FACTOR_1 : 1);
-                logger.debug("Next attempt in {}s", interval);
+                logger.debug('Next attempt in {}s', interval);
                 updateWithRetry(func, failFunc, interval, attempt + 1);
               } else {
                 failFunc();
               }
             }
           }, 1000 * delayInSeconds);
+          cache.private.put(TIMER_CACHE_KEY, timer);
         }
 
 
@@ -250,7 +244,7 @@ actions:
         var parseJSON = function(jsonString) {
             try {
                 var object = JSON.parse(jsonString);
-                if (object && typeof object === "object") {
+                if (object && typeof object === 'object') {
                     return object;
                 }
             }
@@ -260,33 +254,17 @@ actions:
 
 
         /**
-         * Get access token.
-         * @return {*} access token, undefined if http request failed.
-         */
-        var getToken = function() {
-          // get token
-          var header = { "X-secret": X_SECRET, "X-consumer": X_CONSUMER };
-          var url = URL + "access-token";
-          logger.trace("URL: {}", url);
-          var response = actions.HTTP.sendHttpGetRequest(url, header, TIMEOUT_MS);
-          logger.debug("JSON Token: {}", response);
-          var json = parseJSON(response);
-          return json ? json.accessToken : undefined;
-        };
-
-
-        /**
          * Get zipId from ZIP constant.
          * @return {*} zipId or false if zip code could not be parsed to valid zip id, undefined if http request failed.
          */
         var getZipId = function() {
           // check zip code
-          var url = URL + "zipcodes?q=" + ZIP;
-          logger.trace("URL: {}", url);
-          var response = actions.HTTP.sendHttpGetRequest(encodeURI(url), header, TIMEOUT_MS);
-          logger.debug("JSON Zip: {}", response);
+          var url = URL + 'zipcodes?q=' + ZIP;
+          logger.trace('URL: {}', url);
+          var response = actions.HTTP.sendHttpGetRequest(encodeURI(url), HEADER, TIMEOUT_MS);
+          logger.debug('JSON Zip: {}', response);
           var json = response ? parseJSON(response) : undefined;
-          city = json && json.items[0] && json.items[0].city ? json.items[0].city.name : "";
+          city = json && json.items[0] && json.items[0].city ? json.items[0].city.name : '';
           return json ? (json.items[0] ? json.items[0].id : false) : undefined;
         };
 
@@ -297,10 +275,10 @@ actions:
          */
         var getStreetId = function() {
           // check street address
-          var url = URL + "streets?q=" + STREET + "&zipcodes=" + zipId;
-          logger.trace("URL: {}", url);
-          var response = actions.HTTP.sendHttpPostRequest(encodeURI(url), CONTENT_TYPE, "", header, TIMEOUT_MS);
-          logger.debug("JSON Street: {}", response);
+          var url = URL + 'streets?q=' + STREET + '&zipcodes=' + zipId;
+          logger.trace('URL: {}', url);
+          var response = actions.HTTP.sendHttpPostRequest(encodeURI(url), CONTENT_TYPE, '', HEADER, TIMEOUT_MS);
+          logger.debug('JSON Street: {}', response);
           var json = response ? parseJSON(response) : undefined;
           return json ? (json.items[0] ? json.items[0].id : false) : undefined;
         };
@@ -314,21 +292,21 @@ actions:
           // get waste collection dates
           var fromDate = now.format(dateFormat);
           var untilDate = now.plusDays(DAYS).format(dateFormat);
-          var url = URL + "collections?zipcodeId=" + zipId + "&streetId=" + streetId + "&houseNumber=" + NUMBER + "&fromDate=" + fromDate + "&untilDate=" + untilDate;
-          logger.trace("URL: {}", url);
-          var response = actions.HTTP.sendHttpGetRequest(encodeURI(url), header, TIMEOUT_MS);
-          logger.trace("JSON Collections: {}", response);
+          var url = URL + 'collections?zipcodeId=' + zipId + '&streetId=' + streetId + '&houseNumber=' + NUMBER + '&fromDate=' + fromDate + '&untilDate=' + untilDate;
+          logger.trace('URL: {}', url);
+          var response = actions.HTTP.sendHttpGetRequest(encodeURI(url), HEADER, TIMEOUT_MS);
+          logger.trace('JSON Collections: {}', response);
           var json = response ? parseJSON(response) : undefined;
           var collections = json ? json.items.filter(function(collection) {
-              return ((collection.type === "collection") && ((collection.exception === undefined) || (collection.exception.replacedBy === undefined)))
+              return ((collection.type === 'collection') && ((collection.exception === undefined) || (collection.exception.replacedBy === undefined)))
             }).map(function(collection) {
-              return { "timestamp": collection.timestamp.split("T")[0], "fraction": collection.fraction.name.en.toLowerCase() }
+              return { 'timestamp': collection.timestamp.split('T')[0], 'fraction': collection.fraction.name.en.toLowerCase() }
             }).sort(function(collection1, collection2) {
               return (collection1.timestamp > collection2.timestamp)
             }) : undefined;
-          logger.debug("Collections: {}", collections ? JSON.stringify(collections) : "{}");
+          logger.debug('Collections: {}', collections ? JSON.stringify(collections) : '{}');
           if (collections && collections.length === 0) {
-            logger.warn("No collections found for address: {} {}, {} {}", [STREET, NUMBER, ZIP, city]);
+            logger.warn('No collections found for address: {} {}, {} {}', [STREET, NUMBER, ZIP, city]);
           }
           return collections;
         };
@@ -340,39 +318,34 @@ actions:
          * @return {boolean} true if queries succeeded, false if communication error.
          */
         var updateWasteCalendar = function(failFunc) {
-          timer = null;
-          token = !token ? getToken() : token;
-          if (token) {
-            header = { "Authorization": token, "X-consumer": X_CONSUMER };
-            zipId = !zipId ? getZipId() : zipId;
-            if (zipId === false) {
+          zipId = !zipId ? getZipId() : zipId;
+          if (zipId === false) {
+            failFunc();
+            return true;
+          }
+          if (zipId) {
+            streetId = !streetId ? getStreetId() : streetId;
+            if (streetId === false) {
               failFunc();
               return true;
             }
-            if (zipId) {
-              streetId = !streetId ? getStreetId() : streetId;
-              if (streetId === false) {
-                failFunc();
-                return true;
-              }
-              if (streetId) {
-                collections = getCollections();
-                if (collections) {
-                  // update items
-                  for (var wasteItem in WASTE_ITEMS) {
-                    var item = items.getItem(WASTE_ITEMS[wasteItem].item, true);
-                    if (item && item.type.startsWith("DateTime")) {
-                      var waste = collections ? collections.filter(function(collection) {
-                          return WASTE_ITEMS[wasteItem].fraction.reduce(function(result, fraction) {
-                            return result || (collection.fraction.indexOf(fraction) >= 0)
-                          }, false)
-                        })[0] : undefined;
-                      item.postUpdate(waste ? waste.timestamp : "UNDEF");
-                    }
+            if (streetId) {
+              collections = getCollections();
+              if (collections) {
+                // update items
+                for (var wasteItem in WASTE_ITEMS) {
+                  var item = items.getItem(WASTE_ITEMS[wasteItem].item, true);
+                  if (item && item.type.startsWith('DateTime')) {
+                    var waste = collections ? collections.filter(function(collection) {
+                        return WASTE_ITEMS[wasteItem].fraction.reduce(function(result, fraction) {
+                          return result || (collection.fraction.indexOf(fraction) >= 0)
+                        }, false)
+                      })[0] : undefined;
+                    item.postUpdate(waste ? waste.timestamp : 'UNDEF');
                   }
-                  logger.info("Successfully updated waste calendar");
-                  return true;
                 }
+                logger.info('Successfully updated waste calendar');
+                return true;
               }
             }
           }
@@ -385,34 +358,31 @@ actions:
          */
         var updateFailure = function() {
           if (!token) {
-            logger.warn("Unable to retrieve authorization token");
+            logger.warn('Unable to retrieve authorization token');
           } else if (!zipId) {
-            logger.warn("Unable to validate zip code");
+            logger.warn('Unable to validate zip code');
           } else if (!streetId) {
-            logger.warn("Unable to validate street name");
+            logger.warn('Unable to validate street name');
           } else {
-            logger.warn("Unable to retrieve collections")
+            logger.warn('Unable to retrieve collections')
           }
+          cache.private.remove(TIMER_CACHE_KEY);
           
           // Failed, keep dates in items unless it is in the past
           for (var wasteItem in WASTE_ITEMS) {
             var item = items.getItem(WASTE_ITEMS[wasteItem].item, true);
-            if (item && item.state !== "NULL" && item.state !== "UNDEF" && time.ZonedDateTime.now().isAfterDate(item.state)) {
-              item.postUpdate("UNDEF");
+            if (item && item.state !== 'NULL' && item.state !== 'UNDEF' && time.ZonedDateTime.now().isAfterDate(item.state)) {
+              item.postUpdate('UNDEF');
             }
           }
         };
 
 
-        logger.info("Retrieving waste calendar");
+        logger.info('Retrieving waste calendar');
 
 
         var now = time.ZonedDateTime.now().withHour(0).withMinute(0).withSecond(0).withNano(0);
 
-
-        var header = null;
-
-        var token = null;
 
         var zipId = null;
 
@@ -423,9 +393,17 @@ actions:
         var collections = null;
 
 
-        var updateComplete = false;
+        var timer = cache.private.get(TIMER_CACHE_KEY);
 
-        var timer;
+        // Check if there is still a retry attempt scheduled from a previous call of the rule
+
+        if(timer) {
+          logger.debug('Cancelling retry from previous rule call');
+          clearTimeout(timer);
+        }
+
+
+        var updateComplete = false;
 
 
         updateWithRetry(updateWasteCalendar, updateFailure);
